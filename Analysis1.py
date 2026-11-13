@@ -1,50 +1,87 @@
-#OBJECTIVE 1:-
-# To analyze the provided COVID-19 dataset and extract meaningful insights
+# OBJECTIVE 1:
+# Analyze the COVID-19 dataset and summarize key information.
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+
 df = pd.read_excel('covid19dataset_cleaned.xlsx')
-# Display the first few rows of the dataset
-print(df.head())
-# Get basic information about the dataset
-print(df.info())
-# Get summary statistics for numerical columns
-print(df.describe())
-# Check for missing values
-print(df.isnull().sum())
-# Plot the distribution of confirmed cases over time
-if 'Date' in df.columns and 'Confirmed' in df.columns:
-    plt.figure(figsize=(10, 6))
-    plt.plot(df['Date'], df['Confirmed'], label='Confirmed Cases')
+
+date_col = next((col for col in df.columns if str(col).strip().lower() in ('date', 'date_of_interest')), None)
+confirmed_col = next((col for col in df.columns if str(col).strip().lower() in ('confirmed', 'case_count')), None)
+deaths_col = next((col for col in df.columns if str(col).strip().lower() in ('deaths', 'death_count')), None)
+country_col = next((col for col in df.columns if str(col).strip().lower() in ('country', 'country_region')), None)
+
+print('=== COVID-19 DATA ANALYSIS ===')
+print(f'Dataset size: {df.shape[0]:,} rows x {df.shape[1]} columns')
+
+print('\n=== DATA PREVIEW ===')
+print(df.head().to_string(index=False))
+
+print('\n=== COLUMN TYPES AND NON-NULL COUNTS ===')
+df.info()
+
+print('\n=== NUMERIC SUMMARY STATISTICS ===')
+numeric_df = df.select_dtypes(include='number')
+if numeric_df.empty:
+    print('No numeric columns are available.')
+else:
+    print(numeric_df.describe().T.to_string())
+
+print('\n=== MISSING VALUES ===')
+missing = df.isnull().sum()
+missing = missing[missing > 0]
+if missing.empty:
+    print('No missing values found.')
+else:
+    print(missing.to_string())
+
+if date_col and confirmed_col:
+    plot_data = df[[date_col, confirmed_col]].copy()
+    plot_data[date_col] = pd.to_datetime(plot_data[date_col], errors='coerce')
+    plot_data[confirmed_col] = pd.to_numeric(plot_data[confirmed_col], errors='coerce')
+    plot_data = plot_data.dropna().sort_values(date_col)
+
+    plt.figure(figsize=(12, 6))
+    plt.plot(plot_data[date_col], plot_data[confirmed_col], color='royalblue', linewidth=1.5)
     plt.title('Confirmed COVID-19 Cases Over Time')
     plt.xlabel('Date')
     plt.ylabel('Confirmed Cases')
-    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
     plt.show()
 
-# Plotting the correlation matrix
-plt.figure(figsize=(10, 6))
-sns.heatmap(df.corr(), annot=True, cmap='Oranges')
-plt.title('Correlation Matrix')
-plt.show()
-
-# For instance, if there's a strong correlation between 'Deaths' and 'Confirmed', we can explore that relationship.
-if 'Deaths' in df.columns and 'Confirmed' in df.columns:
-    plt.figure(figsize=(10, 6))
-    sns.regplot(x='Confirmed', y='Deaths', data=df)
-    plt.title('Relationship Between Confirmed Cases and Deaths')
-    plt.xlabel('Confirmed Cases')
-    plt.ylabel('Deaths')
+if not numeric_df.empty:
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(numeric_df.corr(), annot=True, fmt='.2f', cmap='Oranges', center=0)
+    plt.title('Correlation Between Numeric Measures')
+    plt.tight_layout()
     plt.show()
 
-# Example: Identify the country with the highest number of confirmed cases
-if 'Country' in df.columns and 'Confirmed' in df.columns:
-    country_max_cases = df.loc[df['Confirmed'].idxmax()]
-    print(f"The country with the highest number of confirmed cases is: {country_max_cases['Country']} with {country_max_cases['Confirmed']} cases.")
+if confirmed_col and deaths_col:
+    scatter_data = df[[confirmed_col, deaths_col]].apply(pd.to_numeric, errors='coerce').dropna()
+    if not scatter_data.empty:
+        plt.figure(figsize=(10, 6))
+        sns.regplot(
+            x=confirmed_col,
+            y=deaths_col,
+            data=scatter_data,
+            scatter_kws={'alpha': 0.5},
+            line_kws={'color': 'red'},
+        )
+        plt.title('Relationship Between Confirmed Cases and Deaths')
+        plt.xlabel('Confirmed Cases')
+        plt.ylabel('Deaths')
+        plt.tight_layout()
+        plt.show()
 
-# Based on the analysis, we can define the best objective.
-# For example, if the goal is to predict future cases, we might proceed with a time series forecasting model.
-# If the goal is to understand the factors contributing to the spread, we might explore regression or clustering.
+if country_col and confirmed_col:
+    country_totals = df.groupby(country_col)[confirmed_col].sum()
+    if not country_totals.empty:
+        top_country = country_totals.idxmax()
+        print(
+            f'\n=== KEY FINDING ===\n'
+            f'Highest reported confirmed-case total: {top_country} '
+            f'({country_totals.max():,.0f} cases)'
+        )
 
-# Example Objective: Predicting future COVID-19 cases based on historical data.
-print("Objective: Predict future COVID-19 cases based on historical data.")
+print('\nAnalysis complete.')
