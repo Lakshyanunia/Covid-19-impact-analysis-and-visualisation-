@@ -83,40 +83,7 @@ The project uses a cleaned COVID-19 dataset containing daily records and borough
 - Manhattan
 - Queens
 - Staten Island
-
-## ⚙️ Installation & Setup
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
-```
-
-### 2. Navigate to the Project Directory
-
-```bash
-cd COVID-19-Data-Analysis
-```
-
-### 3. Install Required Libraries
-
-```bash
-pip install pandas matplotlib seaborn openpyxl
-```
-
-### 4. Run the Python Files
-
-Execute each analysis separately:
-
-```bash
-python Analysis1.py
-python Analysis2.py
-python Analysis3.py
-python Analysis4.py
-python Analysis5.py
-```
-
-**Note:** Keep the Excel dataset in the same directory as the Python scripts.
+  
 
 ## 📈 Visualizations
 
@@ -142,7 +109,6 @@ The project generates several visualizations to understand COVID-19 trends and p
 
 ## 🔮 Future Improvements
 
-- Develop an interactive dashboard using Streamlit or Power BI.
 - Add predictive analysis using Machine Learning.
 - Include more geographical and demographic comparisons.
 - Implement interactive charts and filters.
@@ -154,9 +120,6 @@ The project generates several visualizations to understand COVID-19 trends and p
 
 B.Tech Computer Science and Engineering  
 Software Development and Data Science
-
-- GitHub: https://github.com/kitsunee0104
-- Portfolio: https://lakshya-nunia.vercel.app
 
 ---
 
